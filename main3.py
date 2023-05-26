@@ -21,6 +21,10 @@ def format_response(response_text):
     # Dividir la respuesta en sus componentes
     parts = response_text.split(',')
 
+    # Verificar que cada trabajo tenga 4 partes
+    if len(parts) % 4 != 0:
+        return "The model's response didn't fit the expected format. Please try again."
+
     # formatear respuesta
     formatted_response = "Based on your input, here are some job suggestions for you:\n"
     for i in range(0, len(parts), 4):

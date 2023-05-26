@@ -2,7 +2,7 @@ import openai
 
 openai.api_key = "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"
 
-def generate_response(prompt, top_p=0.1, temperature=0.6, n=1, frequency_penalty=0.1):
+def generate_response(prompt, top_p=0.1, temperature=0.8, n=1, frequency_penalty=0.1):
     # Generate the response
     response = openai.Completion.create(
         model='curie:ft-personal-2023-05-26-21-57-59',
