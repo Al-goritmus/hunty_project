@@ -9,7 +9,7 @@
 
 
 # Ignore bin, lib, and lib64 directories
-/bin/
-/lib/
-/lib64/
-/sources/
+bin/
+lib/
+lib64/
+sources/
