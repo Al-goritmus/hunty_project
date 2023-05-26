@@ -56,20 +56,25 @@ df_vacancies.vacancy_name.isin(df_users.wish_role_name).sum()
 df_vacancies.vacancy_name.isin(df_users.hardskills).sum()
 
 
-#€sta celda del código se usa para preprocesar y tokenizar el contenido de las columnas wish_role_name y vacancy_name
+#€sta parte del código se usa para preprocesar y tokenizar el contenido de las columnas wish_role_name y vacancy_name
 
 # se descarga el recurso "punkt"
 nltk.download('punkt')
 
-#esta función remueve puntuación => pasar a minúsculas => tokeniza palabras => identifica terminos vastago
+from nltk.stem import WordNetLemmatizer 
+from nltk.tokenize import word_tokenize
+import nltk
+nltk.download('wordnet')
+
+lemmatizer = WordNetLemmatizer()
+
 def preprocess_text(text):
     if isinstance(text, str):
         text = text.replace('[^\w\s]', '') 
         text = text.lower()  
-        tokens = word_tokenize(text)  
-        stemmer = PorterStemmer() 
-        stemmed_tokens = [stemmer.stem(token) for token in tokens] 
-        preprocessed_text = ' '.join(stemmed_tokens)  
+        tokens = word_tokenize(text) 
+        lemmatized_tokens = [lemmatizer.lemmatize(token) for token in tokens] 
+        preprocessed_text = ' '.join(lemmatized_tokens)  
         return preprocessed_text
     else:
         return ""
@@ -99,28 +104,42 @@ users_wish_role_column = 'preprocessed_wish_role'
 vacancies_description_column = 'preprocessed_vacancy_name'
 
 
-def text_summarization(text):
-    summary_ratio = 0.8  # este valor establece un ratio entre el tamaño del texto original y la versión resumida
-    summary = summarize(text, ratio=summary_ratio)
-    return summary
+#def text_summarization(text):
+#    summary_ratio = 0.8  # este valor establece un ratio entre el tamaño del texto original y la versión resumida
+#    summary = summarize(text, ratio=summary_ratio)
+#    return summary
 
 # se aplica la sumarización a las columnas ['users_wish_role'] del dataframe df_users y ['preprocessed_vacancy_name']
-df_users['summary_wish_role'] = df_users[users_wish_role_column].apply(text_summarization)
-df_vacancies['summary_description'] = df_vacancies[vacancies_description_column].apply(text_summarization)
+#df_users['summary_wish_role'] = df_users[users_wish_role_column].apply(text_summarization)
+#df_vacancies['summary_description'] = df_vacancies[vacancies_description_column].apply(text_summarization)
 
-df_users['summary_wish_role'].value_counts()
 
-df_vacancies['summary_description'].value_counts().head(50)
-
-df_users[['wish_role_name','preprocessed_wish_role','summary_wish_role']].dropna().head(30)
+#df_users[['wish_role_name','preprocessed_wish_role','summary_wish_role']].dropna().head(30)
 
 """La estrategia de summarize text no parece ser la mejor estrategia con la columna wish_role dada su corta longitud (len()) y la escasa cantidad de output valido incluso subiendo el ratio por encima de 0.5, se utilizará sólo para añadir una versión simplificada de la columna description al dataframe de vacantes, lo siguiente es hacer drop a la columna summary_wish_role """
 
-df_users.drop('summary_wish_role',axis=1,inplace=True)
 
-df_users.columns
+from summarizer import Summarizer
 
-df_vacancies.columns
+users_wish_role_column = 'preprocessed_wish_role'
+vacancies_description_column = 'preprocessed_vacancy_name'
+
+
+# se cargar el BERT pre entrenado
+model = Summarizer()
+
+def bert_summarization(text):
+    # El ratio especifica la información a retener 
+    ratio = 0.8
+    summary = model(text, ratio=ratio)
+    return summary
+
+# Se aplica la sumarización a las columnas deseadas
+df_users['summary_wish_role'] = df_users[users_wish_role_column].apply(bert_summarization)
+df_vacancies['summary_description'] = df_vacancies[vacancies_description_column].apply(bert_summarization)
+
+df_users[['wish_role_name','preprocessed_wish_role','summary_wish_role']].dropna().head(30)
+
 
 """producto de la implementación del fit_transform utilizando el vectorizador instanciado previamente sobre las columnas de texto preprocesado"""
 
@@ -163,18 +182,20 @@ for user_index, vacancy_indices in enumerate(top_n_indices):
 
     for vacancy_index in vacancy_indices:
         vacancy_name = df_vacancies.loc[vacancy_index, 'vacancy_name']
-        vacancy_description = df_vacancies.loc[vacancy_index, 'description']
+        #vacancy_description = df_vacancies.loc[vacancy_index, 'description']
         vacancy_summary = df_vacancies.loc[vacancy_index, 'summary_description']
         vacancy_work_modality = df_vacancies.loc[vacancy_index, 'work_modality']
+        vacancy_account_executive = df_vacancies.loc[vacancy_index, 'account executive']
         
         # Add a dictionary with relevant vacancy data to the list
         lista_recomendaciones.append({
             'id_user': user_id,
             'wish_role_name': user_role,
             'vacancy_name': vacancy_name,
-            'description': vacancy_description,
+            #'description': vacancy_description,
             'summary_description': vacancy_summary,
-            'work_modality': vacancy_work_modality
+            'work_modality': vacancy_work_modality,
+            'account executive': vacancy_account_executive
         })
 
         #se constriiye el dataframe haciendo un append con las variables previamente declaradas con información relevante de las  vacantes 
@@ -196,14 +217,42 @@ recommendations_df.info() #primera visión del dataset de entrenamiento
 
 recommendations_df.head(50) #primeras 50 filas del dataset. Se evidencia la necesidad de manejar los valores nulos en la columna wish_role_name, qué no superan el 20% de los valores
 
-recommendations_df.dropna(subset='wish_role_name') #dado qué esta columna funcionará cómo el prompting para el modelo e igual en el entrenamiento, se elimina las filas en las cual este valor es nulo
+#recommendations_df.dropna(subset='wish_role_name') #dado qué esta columna funcionará cómo el prompting para el modelo e igual en el entrenamiento, se elimina las filas en las cual este valor es nulo
 #Pandas improme una coipia del dataframe cuando no usamos df = df... o inplace=True.
 
 recommendations_df.dropna(subset=['wish_role_name'],inplace=True)
 
 print('recomendations_df',recommendations_df.head(10))
 
-recommendations_df.to_excel('dataset_entrenamiento1.xlsx')
+recommendations_df.to_excel('top_5_recomendaciones.xlsx') #aquí se genera luego de procesada la data y hacer un match apropiado, un excel con el top de recomendaciones por usuario
+
+import json
+
+# Define a function to convert each row to a prompt-completion format
+def convert_to_prompt_completion(record):
+    # Extract the values as strings
+    wish_role_name = str(record['wish_role_name'])
+    vacancy_name = str(record['vacancy_name'])
+    summary_description = str(record['summary_description'])
+    work_modality = str(record['work_modality'])
+    account_executive = str(record['account executive'])
+    
+    # Create the prompt and completion
+    prompt = wish_role_name
+    completion = vacancy_name + ', ' + summary_description + ', ' + work_modality + ', ' + f'Job ID: {account_executive}'
+
+    # Return as a dict
+    return {'prompt': prompt, 'completion': completion}
+
+# Convert each row to the prompt-completion format
+converted_data = [convert_to_prompt_completion(row) for _, row in recommendations_df.iterrows()]
+
+# Save converted data to a jsonl file
+with open('converted_data.jsonl', 'w') as file:
+    for record in converted_data:
+        file.write(json.dumps(record) + '\n')
+
+
 
 """#Por ultimo, sabemos qué los modelos GPT cómo el qué vamos a implementar en este proyecto son modelos qué reciben de manera preferencial versiones tokenizadas de texto en un formato  prompt + completion y para este fin el formato json es el ideal, se procede a correr código en python con el fin de generar un json formateado con el contenido """
 
@@ -213,21 +262,49 @@ import json
 # leer el dataset de recomendaciones en caso de utilizar este cómo fuente.
 # df = pd.read_excel('data_entrenamiento1.xlsx')  # en caso de utilizar un dataset qué fue previamente almacenado en un exce, es decir si recommendations_df es un excel.
 
-# Create a list of dictionaries with the desired format
+# se añade un string vacío de base
+recommendations_df['summary_description'] = recommendations_df['summary_description'].fillna('No summary description provided.')
+
 data = []
-for _, row in recommendations_df.iterrows():
-    # considerando el uso de 'wish_role_name' cómo prompt
+for _, row in recommendations_df.iterrows():  
     prompt = row['wish_role_name']
     
-    # este ciclo for concatena las variables contenidas en las columnas ['vacancy_name', 'description', and 'summary_description'] as completion
-    # se añaden tokens especiales para indicar al modelo el inicio y final de cada campo 
-    completion = "<vacancy_name_start> " + row['vacancy_name'] + " <vacancy_name_end> " + \
-                 "<description_start> " + row['description'] + " <description_end> " + \
-                 "<summary_description_start> " + row['summary_description'] + " <summary_description_end>"
+    completion = [{"vacancy_name": row['vacancy_name'], 
+                   "summary_description": row['summary_description'], 
+                   "account executive": row['account executive']}]
     data.append({"prompt": prompt, "completion": completion})
 
-# El ciclo for anterior genera una lista de diccionarios ahora los incluimos en un JSON con encoding = 'Unicode'
-with open('primer_entrenamiento.jsonl', 'w', encoding='utf-8') as f:
-    for item in data:
+# Convert list of dictionaries into a DataFrame
+recommendations_df = pd.DataFrame(data)
+
+# create a new 'conversation' column
+recommendations_df['conversation'] = recommendations_df['prompt'] + ' ' + recommendations_df['completion'].apply(json.dumps)
+
+
+
+
+# se vectoriza la columna de conversación
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(recommendations_df['conversation'])
+
+# se aplica la similaridad coseno usando pairwise de scikit-learn
+similarity_matrix = cosine_similarity(X)
+
+# Se fija un humbral de similaridad
+similarity_threshold = 0.8
+
+# se remueven aquellos dialogos qué presenten una elevada similaridad coseno
+unique_conversation_indices = []
+for i in range(similarity_matrix.shape[0]):
+    if not any(similarity_matrix[i, :i] > similarity_threshold):
+        unique_conversation_indices.append(i)
+
+unique_recommendations_df = recommendations_df.iloc[unique_conversation_indices]
+
+
+# se genera el archivo JSON
+with open('primer_entrenamiento_reducido2.jsonl', 'w', encoding='utf-8') as f:
+    for _, row in unique_recommendations_df.iterrows():
+        item = {"prompt": row['prompt'], "completion": row['completion']}
         f.write(json.dumps(item, ensure_ascii=False) + '\n')
 
