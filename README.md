@@ -15,9 +15,9 @@ Además, el código implementa la sumarización del texto utilizando BERT para g
 Por último, el código reformatea las recomendaciones generadas en un formato de prompt-completitud y las guarda en un archivo jsonl, que es una representación más eficiente para la siguiente fase de modelado con GPT. En el proceso, se asegura de eliminar los diálogos con alta similitud para evitar redundancias.
 
 2)main3.py
-Este codigo implementa un modelo simple para recomendaciones únicas. 
+Este codigo implementa un modelo simple para recomendaciones únicas. Los resultados para la función de costo y el accuracy están consignados en results.csv
 
 ### 3)top_5_recomendaciones.xlsx.  Este es un producto específico luego de realizar match entre las dos fuentes (vacantes y usuarios) relaciona datos relevantes de usuarios con datos relevantes de vacantes, es el producto principal de la ejecución del código consignado en preprocess_sources_definitive.
 
 4)top_5_recomender.py
-Este código implementa un modelo más complejo con una relación de aproximadamente 1:4 a 1:5 entre rol deseado y vacante para recomendar más de una vacante, en algunos casos 4 o 5 vacantes por usuario. 
+Este código implementa un modelo más complejo con una relación de aproximadamente 1:4 a 1:5 entre rol deseado y vacante para recomendar más de una vacante, en algunos casos 4 o 5 vacantes por usuario. Los resultados para la función de costo y el accuracy están consignados en results_2nd_model.csv
