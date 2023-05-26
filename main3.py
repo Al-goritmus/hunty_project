@@ -3,7 +3,7 @@ import openai
 openai.api_key = "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"
 
 def generate_response(prompt, top_p=0.1, temperature=0.6, n=1, frequency_penalty=0.1):
-    # Generate the response
+    # Generar la respuesta usando la API 
     response = openai.Completion.create(
         model='curie:ft-personal-2023-05-26-21-36-50',
         max_tokens=150,
@@ -18,10 +18,10 @@ def generate_response(prompt, top_p=0.1, temperature=0.6, n=1, frequency_penalty
     return response_text
 
 def format_response(response_text):
-    # Split the response into its parts
+    # Dividir la respuesta en sus componentes
     parts = response_text.split(',')
 
-    # Construct formatted response
+    # formatear respuesta
     formatted_response = "Based on your input, here are some job suggestions for you:\n"
     for i in range(0, len(parts), 4):
         formatted_response += f"{(i//4) + 1}. Job Title: {parts[i]}\n"
