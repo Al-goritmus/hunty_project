@@ -1,4 +1,4 @@
-##README
+#README
 
 Instalación de librerías: pip install -r requirements.txt del archivo 'requirements.txt'
 
