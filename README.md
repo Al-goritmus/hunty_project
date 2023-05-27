@@ -1,8 +1,6 @@
-# hunty_project
-hunty_project
+##README
 
-
-### 1)preprocess_sources_defintive.py
+Instalación de librerías: pip install -r requirements.txt del archivo 'requirements.txt'
 
 Este código es una solución completa para la tarea de preprocesamiento y modelado de recomendación de trabajos. Comienza con la importación de las bibliotecas necesarias y la carga de los datos de dos hojas de Excel que contienen información sobre las vacantes y los usuarios.
 
@@ -14,10 +12,16 @@ Además, el código implementa la sumarización del texto utilizando BERT para g
 
 Por último, el código reformatea las recomendaciones generadas en un formato de prompt-completitud y las guarda en un archivo jsonl, que es una representación más eficiente para la siguiente fase de modelado con GPT. En el proceso, se asegura de eliminar los diálogos con alta similitud para evitar redundancias.
 
-2)main3.py
-Este codigo implementa un modelo simple para recomendaciones únicas. Los resultados para la función de costo y el accuracy están consignados en results.csv
+Archivos principales: 
 
-### 3)top_5_recomendaciones.xlsx.  Este es un producto específico luego de realizar match entre las dos fuentes (vacantes y usuarios) relaciona datos relevantes de usuarios con datos relevantes de vacantes, es el producto principal de la ejecución del código consignado en preprocess_sources_definitive.
+1)preprocess_sources_definitive.py   Código principal del repositorio, utiliza las librerías mencionadas para generar datasets preprocesados y el top_5_recomendaciones en excel
 
-4)top_5_recomender.py
-Este código implementa un modelo más complejo con una relación de aproximadamente 1:4 a 1:5 entre rol deseado y vacante para recomendar más de una vacante, en algunos casos 4 o 5 vacantes por usuario. Los resultados para la función de costo y el accuracy están consignados en results_2nd_model.csv
+2)top_5_recomendaciones.xlsx    Esta fuente se procesa y se convierte en cleaned_data.jsonl.
+
+3)cleaned_data_prepared.jsonl   
+
+4)results.csv (primer modelo) u results_2nd_model.csv (accuracy y función de costo del segundo modelo)
+
+5)top_5_recomender.py implementación del modelo de multiples recomendaciones con formato en python
+
+Entre otros archivos hay json de entrenamiento para modelos, notebooks de análisis de datos y el notebook preprocess_sources_definitive.ipynb qué permitió la prueba de todas las librerías implementadas en el proyecto.
