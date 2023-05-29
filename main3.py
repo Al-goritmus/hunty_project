@@ -1,6 +1,7 @@
 import openai
+import os
 
-openai.api_key = "API_KEY_HERE"
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def generate_response(prompt, top_p=0.1, temperature=0.6, n=1, frequency_penalty=0.1):
     # Generar la respuesta usando la API 

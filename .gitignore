@@ -13,3 +13,5 @@ bin/
 lib/
 lib64/
 sources/
+
+*.env

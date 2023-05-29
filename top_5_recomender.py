@@ -1,8 +1,9 @@
 import openai
+import os
 
-openai.api_key = "API_KEY"
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def generate_response(prompt, top_p=0.1, temperature=0.8, n=1, frequency_penalty=0.1):
+def generate_response(prompt, top_p=0.1, temperature=0.9, n=1, frequency_penalty=0.1):
     # Generate the response
     response = openai.Completion.create(
         model='curie:ft-personal-2023-05-26-21-57-59',
